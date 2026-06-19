@@ -2,7 +2,7 @@
 
 A GitHub **Codespaces** starter that automatically installs [OpenClaw](https://github.com/openclaw/openclaw) and wires it to the **OU LiteLLM gateway** (`https://litellm.lib.ou.edu`, model `gemma4`). Spin up a Codespace, paste your `sk-` key, and you have a working OpenClaw assistant — no local setup.
 
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/OWNER/REPO?quickstart=1)
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/jhassell/openclaw-codespace-starter?quickstart=1)
 
 > Replace `OWNER/REPO` in the badge link above with your GitHub repo (e.g. `hassell/openclaw-ou`).
 
