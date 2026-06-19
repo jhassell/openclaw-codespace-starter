@@ -6,6 +6,9 @@
 // NOTE: OpenClaw uses STRICT schema validation — unknown keys make the gateway
 // refuse to start. Keep edits within documented fields.
 {
+  // Local single-node gateway. Required — the gateway refuses to start without a mode.
+  gateway: { mode: "local" },
+
   // Route every model call through the OU LiteLLM gateway (OpenAI-compatible API).
   models: {
     providers: {
