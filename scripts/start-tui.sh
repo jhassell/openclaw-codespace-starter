@@ -27,11 +27,11 @@ for ((i=0; i<TIMEOUT; i++)); do
      || timeout 1 bash -c ':</dev/tcp/127.0.0.1/18789' 2>/dev/null; then
     echo "✅  Gateway is up — launching the TUI ..."
     sleep 1
-    if [[ -n "${OPENCLAW_GATEWAY_TOKEN:-}" ]]; then
-      exec openclaw tui --token "${OPENCLAW_GATEWAY_TOKEN}"
-    else
-      exec openclaw tui
-    fi
+    # Re-read the token now — the gateway may have just generated/persisted it.
+    TUI_TOKEN="${OPENCLAW_GATEWAY_TOKEN:-}"
+    [[ -z "${TUI_TOKEN}" && -f "${HOME}/.openclaw/.env" ]] && \
+      TUI_TOKEN="$(grep -E '^OPENCLAW_GATEWAY_TOKEN=' "${HOME}/.openclaw/.env" | tail -n1 | cut -d= -f2- || true)"
+    if [[ -n "${TUI_TOKEN}" ]]; then exec openclaw tui --token "${TUI_TOKEN}"; else exec openclaw tui; fi
   fi
   sleep 1
 done

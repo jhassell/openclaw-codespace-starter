@@ -34,14 +34,20 @@ if [[ ! -f "${HOME}/.openclaw/openclaw.json" ]]; then
   bash "${REPO_DIR}/scripts/configure.sh" || true
 fi
 # Load persisted secrets (LiteLLM key + gateway token) into this process.
+mkdir -p "${HOME}/.openclaw"
 if [[ -f "${HOME}/.openclaw/.env" ]]; then set -a; . "${HOME}/.openclaw/.env"; set +a; fi
 
-openclaw config set gateway.mode local     >/dev/null 2>&1 || true
-openclaw config set gateway.bind loopback  >/dev/null 2>&1 || true
-if [[ -n "${OPENCLAW_GATEWAY_TOKEN:-}" ]]; then
-  openclaw config set gateway.auth.mode token                        >/dev/null 2>&1 || true
-  openclaw config set gateway.auth.token "${OPENCLAW_GATEWAY_TOKEN}" >/dev/null 2>&1 || true
+# Guarantee a stable gateway client token exists (older configs predate it).
+if [[ -z "${OPENCLAW_GATEWAY_TOKEN:-}" ]]; then
+  OPENCLAW_GATEWAY_TOKEN="$(openssl rand -hex 24 2>/dev/null || (head -c 24 /dev/urandom | od -An -tx1 | tr -d ' \n'))"
+  export OPENCLAW_GATEWAY_TOKEN
+  printf 'OPENCLAW_GATEWAY_TOKEN=%s\n' "${OPENCLAW_GATEWAY_TOKEN}" >> "${HOME}/.openclaw/.env"
 fi
+
+openclaw config set gateway.mode local                            >/dev/null 2>&1 || true
+openclaw config set gateway.bind loopback                         >/dev/null 2>&1 || true
+openclaw config set gateway.auth.mode token                       >/dev/null 2>&1 || true
+openclaw config set gateway.auth.token "${OPENCLAW_GATEWAY_TOKEN}" >/dev/null 2>&1 || true
 
 echo "🚀  Starting gateway on http://127.0.0.1:18789  (Ctrl-C to stop) ..."
 exec openclaw gateway run
