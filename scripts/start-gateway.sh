@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 # Terminal 1: validate the key, then run the OpenClaw gateway in the foreground.
 # If the key check fails, the gateway is NOT started.
+# Put OpenClaw + node on PATH FIRST — VS Code task shells don't load ~/.bashrc/nvm.
+export PATH="/usr/local/share/npm-global/bin:/usr/local/share/nvm/current/bin:${HOME:-/home/node}/.local/bin:${HOME:-/home/node}/.npm-global/bin:/usr/local/bin:/usr/bin:/bin:${PATH:-}"
 set -uo pipefail
-# Make 'openclaw' findable in non-interactive task shells.
-source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/_env.sh"
+# Extra, image-agnostic resolution (best effort; never fatal).
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/_env.sh" 2>/dev/null || true
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 echo "════════════════════════════════════════════════════"
@@ -17,7 +19,10 @@ fi
 
 if ! command -v openclaw >/dev/null 2>&1; then
   echo "fail" > "${HOME}/.openclaw/.preflight"
-  echo "openclaw not found on PATH. Run: bash .devcontainer/setup.sh"
+  echo "❌ openclaw not found on PATH."
+  echo "   PATH=${PATH}"
+  echo "   probe: $(ls -l /usr/local/share/npm-global/bin/openclaw 2>&1)"
+  echo "   Fix: bash .devcontainer/setup.sh"
   exit 1
 fi
 

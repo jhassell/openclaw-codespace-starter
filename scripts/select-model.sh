@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 # Discover the models the OU LiteLLM gateway offers, then set a primary and
 # optional secondary (fallback) model. The gateway hot-reloads — no restart.
+# Put OpenClaw + node on PATH FIRST — VS Code task shells don't load ~/.bashrc/nvm.
+export PATH="/usr/local/share/npm-global/bin:/usr/local/share/nvm/current/bin:${HOME:-/home/node}/.local/bin:${HOME:-/home/node}/.npm-global/bin:/usr/local/bin:/usr/bin:/bin:${PATH:-}"
 set -uo pipefail
-# Make 'openclaw' findable in non-interactive task shells.
-source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/_env.sh"
+# Extra, image-agnostic resolution (best effort; never fatal).
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/_env.sh" 2>/dev/null || true
 
 LITELLM_BASE_URL="${LITELLM_BASE_URL:-https://litellm.lib.ou.edu}"
 ENV_FILE="${HOME}/.openclaw/.env"

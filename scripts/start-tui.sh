@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 # Terminal 2: wait for the gateway to be healthy, then launch the OpenClaw TUI.
 # Aborts (without starting the TUI) if the gateway pre-flight failed.
+# Put OpenClaw + node on PATH FIRST — VS Code task shells don't load ~/.bashrc/nvm.
+export PATH="/usr/local/share/npm-global/bin:/usr/local/share/nvm/current/bin:${HOME:-/home/node}/.local/bin:${HOME:-/home/node}/.npm-global/bin:/usr/local/bin:/usr/bin:/bin:${PATH:-}"
 set -uo pipefail
-# Make 'openclaw' findable in non-interactive task shells.
-source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/_env.sh"
+# Extra, image-agnostic resolution (best effort; never fatal).
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/_env.sh" 2>/dev/null || true
 
 STATUS="${HOME}/.openclaw/.preflight"
 HEALTH="http://127.0.0.1:18789/healthz"
