@@ -11,6 +11,11 @@ REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 [[ -f "${SENTINEL}" ]] && exit 0
 [[ -t 0 && -t 1 ]] || exit 0
 
+# Mark first-run done UP FRONT so this never re-fires — even if the wizard is
+# interrupted (Ctrl-C) or you open another terminal before finishing setup.
+mkdir -p "${HOME}/.openclaw"
+touch "${SENTINEL}"
+
 cat <<'BANNER'
 ────────────────────────────────────────────────────────
  🦞  OpenClaw Codespace — first-run setup
@@ -33,9 +38,8 @@ read -rp "Launch the OpenClaw onboarding wizard now (channels, etc.)? [y/N] " yn
 if [[ "${yn}" =~ ^[Yy]$ ]]; then
   openclaw onboard || true
 else
-  echo "Skipped. Run 'openclaw onboard' anytime, or './scripts/start.sh' to launch OpenClaw."
+  echo "Skipped."
 fi
 
-# Mark first-run complete so this doesn't fire on every new terminal.
-mkdir -p "${HOME}/.openclaw"
-touch "${SENTINEL}"
+echo "This first-run prompt won't appear again. Re-run onboarding anytime with:"
+echo "    openclaw onboard        (or ./scripts/start.sh to launch OpenClaw)"
