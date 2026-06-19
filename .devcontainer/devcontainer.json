@@ -1,0 +1,32 @@
+{
+  // OpenClaw Codespace — auto-installs OpenClaw and points it at the
+  // OU LiteLLM gateway (model: gemma4). Comments are allowed in devcontainer.json.
+  "name": "OpenClaw (OU LiteLLM)",
+
+  // Node 22 LTS base (OpenClaw supports Node 22.14+; 24 is the upstream default).
+  // The installer will bump Node only if the base is too old.
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:22-bookworm",
+
+  // Codespaces PROMPTS for this secret at creation time if it isn't already
+  // saved in the user's account/repo secrets. It is injected as an env var.
+  "secrets": {
+    "LITELLM_API_KEY": {
+      "description": "Your OU LiteLLM API key (starts with sk-). Issued by the OU LiteLLM gateway at https://litellm.lib.ou.edu.",
+      "documentationUrl": "https://docs.openclaw.ai/providers/litellm"
+    }
+  },
+
+  // OpenClaw Gateway + Control UI listen on 18789.
+  "forwardPorts": [18789],
+  "portsAttributes": {
+    "18789": {
+      "label": "OpenClaw Control UI",
+      "onAutoForward": "notify"
+    }
+  },
+
+  // Runs once after the container is built: installs OpenClaw and writes config.
+  "postCreateCommand": "bash .devcontainer/setup.sh",
+
+  "remoteUser": "node"
+}
