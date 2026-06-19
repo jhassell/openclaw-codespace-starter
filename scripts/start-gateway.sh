@@ -2,7 +2,8 @@
 # Terminal 1: validate the key, then run the OpenClaw gateway in the foreground.
 # If the key check fails, the gateway is NOT started.
 set -uo pipefail
-export PATH="${HOME}/.local/bin:${HOME}/.npm-global/bin:/usr/local/share/npm-global/bin:${PATH}"
+# Make 'openclaw' findable in non-interactive task shells.
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/_env.sh"
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 echo "════════════════════════════════════════════════════"

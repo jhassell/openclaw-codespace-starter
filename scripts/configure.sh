@@ -22,6 +22,9 @@ PLACEHOLDER="sk-REPLACE_ME"
 
 mkdir -p "${STATE_DIR}"
 
+# Make 'openclaw' findable for the optional validation step below.
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/_env.sh"
+
 # Resolve the API key: explicit arg > env var > existing .env file.
 KEY="${1:-${LITELLM_API_KEY:-}}"
 if [[ -z "${KEY}" && -f "${ENV_FILE}" ]]; then

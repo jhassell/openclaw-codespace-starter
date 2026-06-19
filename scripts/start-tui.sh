@@ -2,7 +2,8 @@
 # Terminal 2: wait for the gateway to be healthy, then launch the OpenClaw TUI.
 # Aborts (without starting the TUI) if the gateway pre-flight failed.
 set -uo pipefail
-export PATH="${HOME}/.local/bin:${HOME}/.npm-global/bin:/usr/local/share/npm-global/bin:${PATH}"
+# Make 'openclaw' findable in non-interactive task shells.
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/_env.sh"
 
 STATUS="${HOME}/.openclaw/.preflight"
 HEALTH="http://127.0.0.1:18789/healthz"

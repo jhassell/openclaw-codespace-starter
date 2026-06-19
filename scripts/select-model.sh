@@ -2,7 +2,8 @@
 # Discover the models the OU LiteLLM gateway offers, then set a primary and
 # optional secondary (fallback) model. The gateway hot-reloads — no restart.
 set -uo pipefail
-export PATH="${HOME}/.local/bin:${HOME}/.npm-global/bin:/usr/local/share/npm-global/bin:${PATH}"
+# Make 'openclaw' findable in non-interactive task shells.
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/_env.sh"
 
 LITELLM_BASE_URL="${LITELLM_BASE_URL:-https://litellm.lib.ou.edu}"
 ENV_FILE="${HOME}/.openclaw/.env"
