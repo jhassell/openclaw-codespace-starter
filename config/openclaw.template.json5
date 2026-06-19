@@ -6,7 +6,6 @@
 // NOTE: OpenClaw uses STRICT schema validation — unknown keys make the gateway
 // refuse to start. Keep edits within documented fields.
 {
-  gateway: { mode: "local" },
   // Local single-node gateway. 'mode' is required; 'bind: loopback' avoids the
   // container auth requirement (Codespaces forwards the loopback port for you).
   gateway: { mode: "local", bind: "loopback" },
