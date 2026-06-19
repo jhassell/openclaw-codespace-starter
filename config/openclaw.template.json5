@@ -6,9 +6,9 @@
 // NOTE: OpenClaw uses STRICT schema validation — unknown keys make the gateway
 // refuse to start. Keep edits within documented fields.
 {
-  // Local single-node gateway. 'mode' is required; 'bind: loopback' avoids the
-  // container auth requirement (Codespaces forwards the loopback port for you).
-  gateway: { mode: "local", bind: "loopback" },
+  // Local single-node gateway. mode=local + bind=loopback for Codespaces; a
+  // persisted client token (from ~/.openclaw/.env) lets the TUI authenticate.
+  gateway: { mode: "local", bind: "loopback", auth: { mode: "token", token: "${OPENCLAW_GATEWAY_TOKEN}" } },
 
   // Route every model call through the OU LiteLLM gateway (OpenAI-compatible API).
   models: {

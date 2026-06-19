@@ -11,6 +11,9 @@ STATUS="${HOME}/.openclaw/.preflight"
 HEALTH="http://127.0.0.1:18789/healthz"
 TIMEOUT="${OPENCLAW_TUI_WAIT:-120}"
 
+# Load the gateway token so the TUI can authenticate to the gateway.
+if [[ -f "${HOME}/.openclaw/.env" ]]; then set -a; . "${HOME}/.openclaw/.env"; set +a; fi
+
 echo "⏳  Waiting for the OpenClaw gateway to come up ..."
 for ((i=0; i<TIMEOUT; i++)); do
   if [[ "$(cat "${STATUS}" 2>/dev/null)" == "fail" ]]; then
@@ -24,7 +27,11 @@ for ((i=0; i<TIMEOUT; i++)); do
      || timeout 1 bash -c ':</dev/tcp/127.0.0.1/18789' 2>/dev/null; then
     echo "✅  Gateway is up — launching the TUI ..."
     sleep 1
-    exec openclaw tui
+    if [[ -n "${OPENCLAW_GATEWAY_TOKEN:-}" ]]; then
+      exec openclaw tui --token "${OPENCLAW_GATEWAY_TOKEN}"
+    else
+      exec openclaw tui
+    fi
   fi
   sleep 1
 done

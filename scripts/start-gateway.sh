@@ -33,8 +33,15 @@ if [[ ! -f "${HOME}/.openclaw/openclaw.json" ]]; then
   echo "No config found — rendering defaults…"
   bash "${REPO_DIR}/scripts/configure.sh" || true
 fi
+# Load persisted secrets (LiteLLM key + gateway token) into this process.
+if [[ -f "${HOME}/.openclaw/.env" ]]; then set -a; . "${HOME}/.openclaw/.env"; set +a; fi
+
 openclaw config set gateway.mode local     >/dev/null 2>&1 || true
 openclaw config set gateway.bind loopback  >/dev/null 2>&1 || true
+if [[ -n "${OPENCLAW_GATEWAY_TOKEN:-}" ]]; then
+  openclaw config set gateway.auth.mode token                        >/dev/null 2>&1 || true
+  openclaw config set gateway.auth.token "${OPENCLAW_GATEWAY_TOKEN}" >/dev/null 2>&1 || true
+fi
 
 echo "🚀  Starting gateway on http://127.0.0.1:18789  (Ctrl-C to stop) ..."
 exec openclaw gateway run
