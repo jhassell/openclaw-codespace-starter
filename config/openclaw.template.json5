@@ -35,7 +35,7 @@
 
   agents: {
     defaults: {
-      model: { primary: "litellm/@@MODEL_ID@@" },
+      model: @@MODEL_BLOCK@@,
       workspace: "~/.openclaw/workspace",
     },
   },

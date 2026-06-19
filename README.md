@@ -1,79 +1,77 @@
 # OpenClaw Codespace Starter (OU LiteLLM)
 
-A GitHub **Codespaces** starter that automatically installs [OpenClaw](https://github.com/openclaw/openclaw) and wires it to the **OU LiteLLM gateway** (`https://litellm.lib.ou.edu`, model `gemma4`). Spin up a Codespace, paste your `sk-` key, and you have a working OpenClaw assistant — no local setup.
+A GitHub **Codespaces** starter that installs [OpenClaw](https://github.com/openclaw/openclaw), points it at the **OU LiteLLM gateway** (model `gemma4` by default), verifies your key, and — the moment the Codespace opens — **starts the gateway and drops you into an interactive TUI**. No wizard, no manual steps.
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/jhassell/openclaw-codespace-starter?quickstart=1)
 
-> Replace `OWNER/REPO` in the badge link above with your GitHub repo (e.g. `hassell/openclaw-ou`).
+## What happens when you open the Codespace
 
-## What you get
-
-When the Codespace is created, `postCreateCommand` runs `.devcontainer/setup.sh`, which:
-
-1. Installs OpenClaw via the official installer (`https://openclaw.ai/install.sh`, non-interactive).
-2. Writes `~/.openclaw/openclaw.json` configured for the OU LiteLLM gateway with `gemma4` as the default model.
-3. Stores your API key in `~/.openclaw/.env` (never committed) and installs a one-time onboarding prompt for new terminals.
+1. **On create** (`postCreate`): installs OpenClaw and writes `~/.openclaw/openclaw.json` (LiteLLM provider, `gemma4` default). No onboarding wizard.
+2. **On open**, two terminals start automatically (VS Code tasks):
+   - **OpenClaw: Gateway** — runs a **pre-flight** that checks your LiteLLM key against the OU `/v1/models` endpoint. Key bad → clear error, gateway **not** started. Key good → `openclaw gateway run` (loopback, port 18789).
+   - **OpenClaw: TUI** — waits for the gateway to be healthy (and **aborts with a message if the pre-flight failed**), then launches `openclaw tui`. You can start chatting right away.
 
 ## Quick start
 
-1. **Create your repo** from this template (green **Use this template** button) and update the badge link above.
-2. **Launch a Codespace**: *Code → Codespaces → Create codespace on main*.
-3. **Enter your key when prompted.** Because `.devcontainer/devcontainer.json` declares a recommended secret, Codespaces asks for `LITELLM_API_KEY` at creation. Paste your OU key (starts with `sk-`).
-4. **Open a new terminal.** The first-run helper confirms your key (or prompts for it if you skipped the secret) and offers to launch `openclaw onboard`.
-5. **Start it:** `./scripts/start.sh` — the Control UI is forwarded on port **18789**.
+1. **Use this template** → create your repo.
+2. **Add your key:** set a Codespaces secret named `LITELLM_API_KEY` (starts with `sk-`). You're prompted for it at creation because `devcontainer.json` declares it.
+3. **Code → Codespaces → Create codespace on main.**
+4. Wait for the install to finish; the **Gateway** and **TUI** terminals open on their own. Start typing in the TUI.
 
-### Didn't set the secret?
+Didn't set the secret? Open a terminal, run `bash scripts/set-key.sh`, then re-run the **OpenClaw: Gateway** / **OpenClaw: TUI** tasks (Command Palette → *Tasks: Run Task*) or reload the window.
 
-Run this anytime to enter your key (hidden input) and regenerate the config:
+## The key, and the pre-flight check
 
-```bash
-bash scripts/set-key.sh
-```
+Your key lives only in `~/.openclaw/.env` (gitignored) and is referenced from the config as `${LITELLM_API_KEY}` — never written into `openclaw.json`. Before every gateway start, `scripts/preflight.sh` calls the OU `/v1/models` endpoint with your key:
 
-## How the key is handled
+- **Valid** → the gateway starts.
+- **Rejected (401/403) or unreachable** → a clear on-screen error, the gateway is **aborted**, and the TUI doesn't launch.
 
-The key lives only in `~/.openclaw/.env` inside your Codespace and is referenced from the config as `${LITELLM_API_KEY}`. It is **not** written into `openclaw.json` and is gitignored. Set it once as a [Codespaces secret](https://docs.github.com/en/codespaces/managing-your-codespaces/managing-your-account-specific-secrets-for-github-codespaces) (recommended) so every new Codespace picks it up automatically.
+Fix a bad key with `bash scripts/set-key.sh`, then re-run the tasks.
 
-## Customizing
+## Choosing models
 
-Defaults live at the top of `scripts/configure.sh` (and the template at `config/openclaw.template.json5`). Override without editing files by exporting before you run `configure.sh`:
+`gemma4` is the default primary with no fallback — zero config needed. Three ways to change it:
 
-| Variable | Default | Purpose |
-| --- | --- | --- |
-| `LITELLM_BASE_URL` | `https://litellm.lib.ou.edu` | Gateway base URL |
-| `OPENCLAW_MODEL` | `gemma4` | Model id (becomes `litellm/<id>`) |
-| `OPENCLAW_MODEL_NAME` | `Gemma 4 (OU LiteLLM)` | Display name |
+- **Interactive (recommended):** run `bash scripts/select-model.sh`. It lists the models your gateway actually serves (live, from `/v1/models`) and lets you pick a **primary** and optional **secondary/fallback**. Applied through OpenClaw and **hot-reloaded** — no restart.
+- **In chat:** type `/model` in the TUI to switch the current session's model.
+- **Pinned at boot (reproducible):** set Codespaces secrets/variables `OPENCLAW_MODEL` (e.g. `llama3.1`) and optionally `OPENCLAW_MODEL_FALLBACKS` (comma-separated, e.g. `mistral,gemma4`). `configure.sh` bakes them into the config at creation — no prompt.
 
-```bash
-LITELLM_BASE_URL="https://litellm.lib.ou.edu/v1" OPENCLAW_MODEL="gemma4" bash scripts/configure.sh
-```
+Models are referenced as `litellm/<id>`, where `<id>` is what the gateway reports.
 
 ## Commands
 
 | Command | What it does |
 | --- | --- |
-| `bash .devcontainer/setup.sh` | Re-run install + configuration (idempotent) |
-| `bash scripts/set-key.sh` | Enter/replace your `sk-` key |
-| `bash scripts/configure.sh` | Re-render config from the template |
-| `./scripts/start.sh` | Start OpenClaw (Control UI on `:18789`) |
-| `openclaw onboard` | OpenClaw's interactive setup wizard |
-| `openclaw doctor` | Diagnose config/auth problems |
+| *OpenClaw: Gateway* task (auto) | pre-flight key check, then `openclaw gateway run` |
+| *OpenClaw: TUI* task (auto) | waits for gateway health, then `openclaw tui` |
+| `bash scripts/select-model.sh` | pick primary + secondary from the live model list |
+| `bash scripts/set-key.sh` | enter/replace your `sk-` key |
+| `bash scripts/configure.sh` | re-render config from the template |
+| `openclaw tui` | open the TUI manually |
+| `openclaw gateway run` | start the gateway manually |
+| `openclaw models status` | show the resolved primary + fallbacks |
+| `openclaw doctor` | diagnose config/auth problems |
 
 ## Troubleshooting
 
-- **`openclaw: command not found`** — open a fresh terminal (PATH is set in `~/.bashrc`), or re-run `bash .devcontainer/setup.sh`.
-- **Gateway won't start / "Invalid config"** — OpenClaw uses strict schema validation. Run `openclaw doctor --fix`.
-- **`404` on model calls** — your endpoint may expect the `/v1` suffix. Re-run with `LITELLM_BASE_URL="https://litellm.lib.ou.edu/v1" bash scripts/configure.sh`.
-- **`401 Unauthorized`** — the key is wrong or a placeholder. Run `bash scripts/set-key.sh`.
-- **`Gateway start blocked … missing gateway.mode`** — run `openclaw config set gateway.mode local`, then start again. (The template sets this; configs created before this fix may lack it.)
-- **`Refusing to bind gateway to auto without auth`** (containers/Codespaces) — run `openclaw config set gateway.bind loopback`. The template sets this; Codespaces forwards the loopback port for you.
+- **Terminals didn't open automatically** — VS Code may ask to *Allow Automatic Tasks*; click Allow (`.vscode/settings.json` sets this on). Otherwise Command Palette → *Tasks: Run Task* → *OpenClaw: Gateway* / *OpenClaw: TUI*. Reloading the window re-triggers them.
+- **Key rejected at pre-flight** — invalid/expired key: `bash scripts/set-key.sh`, then re-run the tasks.
+- **`404` from the model endpoint** — your endpoint may need the `/v1` suffix: re-run with `LITELLM_BASE_URL="https://litellm.lib.ou.edu/v1" bash scripts/configure.sh`.
+- **"Model is not allowed" / model errors** — list valid options with `bash scripts/select-model.sh` or `openclaw models list`.
+- **`openclaw: command not found`** — open a fresh terminal (PATH is set in `~/.bashrc`) or re-run `bash .devcontainer/setup.sh`.
 
-## Use outside Codespaces
+## How it works
 
-The same scripts work in any Linux/macOS/WSL shell: clone the repo, run `bash .devcontainer/setup.sh`, then `bash scripts/set-key.sh`.
+- `.devcontainer/devcontainer.json` — Node base image, `LITELLM_API_KEY` secret prompt, forwards port 18789, runs `setup.sh` on create.
+- `.devcontainer/setup.sh` — installs OpenClaw, renders the config.
+- `config/openclaw.template.json5` → `~/.openclaw/openclaw.json` — LiteLLM provider, `gateway.mode=local` + `bind=loopback`, primary/fallback models.
+- `.vscode/tasks.json` — opens the Gateway + TUI terminals on folder open.
+- `scripts/` — `preflight`, `start-gateway`, `start-tui`, `select-model`, `set-key`, `configure`.
 
 ## Links
 
 - OpenClaw docs — https://docs.openclaw.ai
-- LiteLLM provider config — https://docs.openclaw.ai/providers/litellm
-- Configuration reference — https://docs.openclaw.ai/gateway/configuration
+- LiteLLM provider — https://docs.openclaw.ai/providers/litellm
+- TUI — https://docs.openclaw.ai/cli/tui
+- Models CLI — https://docs.openclaw.ai/concepts/models

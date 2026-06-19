@@ -1,0 +1,24 @@
+{
+  // Two terminals open automatically when the Codespace opens:
+  //   1) "OpenClaw: Gateway" — validates the key, then runs the gateway
+  //   2) "OpenClaw: TUI"     — waits for the gateway, then opens the TUI
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "OpenClaw: Gateway",
+      "type": "shell",
+      "command": "bash '${workspaceFolder}/scripts/start-gateway.sh'",
+      "presentation": { "group": "openclaw", "panel": "dedicated", "reveal": "always", "focus": false },
+      "runOptions": { "runOn": "folderOpen" },
+      "problemMatcher": []
+    },
+    {
+      "label": "OpenClaw: TUI",
+      "type": "shell",
+      "command": "bash '${workspaceFolder}/scripts/start-tui.sh'",
+      "presentation": { "group": "openclaw", "panel": "dedicated", "reveal": "always", "focus": true },
+      "runOptions": { "runOn": "folderOpen" },
+      "problemMatcher": []
+    }
+  ]
+}
