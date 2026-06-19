@@ -7,8 +7,9 @@
 // refuse to start. Keep edits within documented fields.
 {
   gateway: { mode: "local" },
-  // Local single-node gateway. Required — the gateway refuses to start without a mode.
-  gateway: { mode: "local" },
+  // Local single-node gateway. 'mode' is required; 'bind: loopback' avoids the
+  // container auth requirement (Codespaces forwards the loopback port for you).
+  gateway: { mode: "local", bind: "loopback" },
 
   // Route every model call through the OU LiteLLM gateway (OpenAI-compatible API).
   models: {

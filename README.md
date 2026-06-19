@@ -66,6 +66,7 @@ LITELLM_BASE_URL="https://litellm.lib.ou.edu/v1" OPENCLAW_MODEL="gemma4" bash sc
 - **`404` on model calls** — your endpoint may expect the `/v1` suffix. Re-run with `LITELLM_BASE_URL="https://litellm.lib.ou.edu/v1" bash scripts/configure.sh`.
 - **`401 Unauthorized`** — the key is wrong or a placeholder. Run `bash scripts/set-key.sh`.
 - **`Gateway start blocked … missing gateway.mode`** — run `openclaw config set gateway.mode local`, then start again. (The template sets this; configs created before this fix may lack it.)
+- **`Refusing to bind gateway to auto without auth`** (containers/Codespaces) — run `openclaw config set gateway.bind loopback`. The template sets this; Codespaces forwards the loopback port for you.
 
 ## Use outside Codespaces
 
