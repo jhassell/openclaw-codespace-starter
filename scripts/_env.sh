@@ -19,5 +19,13 @@ do
     esac
   fi
 done
+# Last resort: if openclaw still isn't resolvable, search for it on disk.
+if ! command -v openclaw >/dev/null 2>&1; then
+  _oc="$(find "${_NVM_DIR}" /usr/local/share/npm-global /usr/local/lib/node_modules "${HOME}/.npm-global" "${HOME}/.local" "${HOME}/.openclaw" -maxdepth 4 -name openclaw -type f 2>/dev/null | head -n1)"
+  if [ -n "${_oc:-}" ]; then
+    case ":${PATH}:" in *":$(dirname "${_oc}"):"*) : ;; *) PATH="$(dirname "${_oc}"):${PATH}" ;; esac
+  fi
+  unset _oc
+fi
 export PATH
 unset _d _NVM_DIR

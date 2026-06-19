@@ -18,11 +18,17 @@ if ! bash "${REPO_DIR}/scripts/preflight.sh"; then
 fi
 
 if ! command -v openclaw >/dev/null 2>&1; then
+  echo "⚙️  openclaw not found — installing it now (one-time, ~1-2 min)…"
+  OPENCLAW_NO_ONBOARD=1 OPENCLAW_NO_PROMPT=1 \
+    bash -c 'curl -fsSL --proto "=https" --tlsv1.2 https://openclaw.ai/install.sh | bash -s -- --no-onboard --no-prompt' || true
+  source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/_env.sh" 2>/dev/null || true
+fi
+if ! command -v openclaw >/dev/null 2>&1; then
   echo "fail" > "${HOME}/.openclaw/.preflight"
-  echo "❌ openclaw not found on PATH."
+  echo "❌ openclaw still not found after install attempt."
   echo "   PATH=${PATH}"
-  echo "   probe: $(ls -l /usr/local/share/npm-global/bin/openclaw 2>&1)"
-  echo "   Fix: bash .devcontainer/setup.sh"
+  echo "   on disk: $(find "${HOME}" /usr/local/share /usr/local/lib -maxdepth 5 -name openclaw -type f 2>/dev/null | head -3 | tr '\n' ' ')"
+  echo "   Fix: open a terminal and run  bash .devcontainer/setup.sh"
   exit 1
 fi
 
