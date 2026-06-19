@@ -20,5 +20,15 @@ if ! command -v openclaw >/dev/null 2>&1; then
   exit 1
 fi
 
+# Ensure a startable config exists. Render defaults if missing, and always make
+# sure the container-critical keys are set. These are surgical — they do NOT
+# touch any model selection you made with select-model.sh.
+if [[ ! -f "${HOME}/.openclaw/openclaw.json" ]]; then
+  echo "No config found — rendering defaults…"
+  bash "${REPO_DIR}/scripts/configure.sh" || true
+fi
+openclaw config set gateway.mode local     >/dev/null 2>&1 || true
+openclaw config set gateway.bind loopback  >/dev/null 2>&1 || true
+
 echo "🚀  Starting gateway on http://127.0.0.1:18789  (Ctrl-C to stop) ..."
 exec openclaw gateway run
