@@ -6,6 +6,7 @@
 // NOTE: OpenClaw uses STRICT schema validation — unknown keys make the gateway
 // refuse to start. Keep edits within documented fields.
 {
+  gateway: { mode: "local" },
   // Local single-node gateway. Required — the gateway refuses to start without a mode.
   gateway: { mode: "local" },
 
