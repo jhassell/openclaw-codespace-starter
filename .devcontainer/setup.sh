@@ -27,4 +27,19 @@ export PATH="\${HOME}/.local/bin:\${HOME}/.npm-global/bin:/usr/local/share/npm-g
 EOF
 fi
 
+# Best-effort: install the model-picker keyboard shortcut (Ctrl/Cmd+Alt+M).
+# USER-scoped, so only written when no keybindings.json exists yet (never clobbers yours).
+SRC="${REPO_DIR}/.vscode/keybindings.sample.jsonc"
+if [[ -f "${SRC}" ]]; then
+  for D in "${HOME}/.vscode-remote/data/User" "${HOME}/.vscode-server/data/User" "${HOME}/.vscode-server-insiders/data/User"; do
+    [[ -d "${D}" ]] || continue
+    if [[ ! -e "${D}/keybindings.json" ]]; then
+      cp "${SRC}" "${D}/keybindings.json" && echo "==> Installed model-picker shortcut (Ctrl/Cmd+Alt+M)."
+    else
+      echo "==> Existing keybindings.json found — shortcut not auto-added (see .vscode/keybindings.sample.jsonc)."
+    fi
+    break
+  done
+fi
+
 echo "==> Setup complete. The Gateway and TUI start automatically when the Codespace opens."

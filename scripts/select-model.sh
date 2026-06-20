@@ -19,16 +19,28 @@ read_env() { # read_env VAR -> value from process env or ~/.openclaw/.env
 apply_models() { # apply_models <prefix> <primary> [fallbacks...]
   local prefix="$1" primary="$2"; shift 2
   echo "→ primary: ${prefix}${primary}"
-  openclaw models set "${prefix}${primary}"
+  if ! openclaw models set "${prefix}${primary}"; then
+    echo "❌ Could not set primary '${prefix}${primary}'."
+    echo "   Run 'openclaw models list' for valid refs, and check the gateway is running."
+    exit 1
+  fi
   openclaw models fallbacks clear >/dev/null 2>&1 || true
   local f
   for f in "$@"; do
-    [[ -n "${f}" ]] && { echo "→ fallback: ${prefix}${f}"; openclaw models fallbacks add "${prefix}${f}"; }
+    [[ -n "${f}" ]] || continue
+    echo "→ fallback: ${prefix}${f}"
+    openclaw models fallbacks add "${prefix}${f}" || echo "⚠️  Couldn't add fallback '${prefix}${f}' — skipped."
   done
   echo; echo "Current model configuration:"
-  openclaw models status 2>/dev/null || true
-  echo "(Hot-reloaded — your next message uses the new model.)"
+  openclaw models status 2>/dev/null || echo "⚠️  'openclaw models status' unavailable (is the gateway running?)."
+  echo "(Hot-reloaded for new sessions. For the chat you're in now, switch with /model.)"
 }
+
+# ---- prerequisites --------------------------------------------------------
+need() { command -v "$1" >/dev/null 2>&1 || { echo "❌ Required tool '$1' not found — $2"; exit 1; }; }
+need curl    "rebuild the Codespace or install curl."
+need python3 "rebuild the Codespace or install python3."
+need openclaw "OpenClaw isn't on PATH yet — start the Gateway task first, or run: bash .devcontainer/setup.sh"
 
 # ---- OU LiteLLM catalog ---------------------------------------------------
 OU_KEY="$(read_env LITELLM_API_KEY)"
@@ -40,10 +52,15 @@ for url in "${oubase}/v1/models" "${oubase}/models"; do
   http="$(curl -s -m 20 -o /tmp/ou_models.json -w '%{http_code}' -H "Authorization: Bearer ${OU_KEY}" "${url}" || echo 000)"
   [[ "${http}" == "200" ]] && break
 done
-[[ "${http}" == "200" ]] || { echo "Could not list OU models (HTTP ${http})."; exit 1; }
+case "${http}" in
+  200) ;;
+  401|403) echo "❌ OU key rejected (HTTP ${http}). Fix it with: bash scripts/set-key.sh"; exit 1 ;;
+  000)     echo "❌ Could not reach ${oubase} (network/endpoint issue). Check the URL or try again."; exit 1 ;;
+  *)       echo "❌ OU gateway returned HTTP ${http}. Details in /tmp/ou_models.json"; exit 1 ;;
+esac
 mapfile -t OU < <(python3 -c 'import json
 for m in json.load(open("/tmp/ou_models.json")).get("data",[]): print(m["id"])' 2>/dev/null | sort -u)
-((${#OU[@]})) || { echo "No OU models returned."; exit 1; }
+((${#OU[@]})) || { echo "❌ No models parsed from the OU response (/tmp/ou_models.json may be malformed)."; exit 1; }
 N=${#OU[@]}
 
 # ---- list OU models + OpenRouter option (key-gated) -----------------------
@@ -63,9 +80,18 @@ read -rp "Pick a number [default 1]: " choice </dev/tty; choice="${choice:-1}"
 
 # ---- OpenRouter branch ----------------------------------------------------
 if [[ -n "${OR_KEY}" && "${choice}" == "${OR_OPTION}" ]]; then
+  # Validate the key first — listing is public, but selecting a model is moot if the key is bad.
+  kc="$(curl -s -m 15 -o /dev/null -w '%{http_code}' -H "Authorization: Bearer ${OR_KEY}" https://openrouter.ai/api/v1/key || echo 000)"
+  if [[ "${kc}" != "200" ]]; then
+    echo "⚠️  OpenRouter key check returned HTTP ${kc} — it may be invalid, expired, or out of credit."
+    echo "    You can still browse, but the model will fail at runtime until the key works."
+    read -rp "Continue anyway? [y/N] " yn </dev/tty || yn=""
+    [[ "${yn}" =~ ^[Yy]$ ]] || { echo "Aborted."; exit 1; }
+  fi
   echo "Fetching tool-capable OpenRouter models ..."
-  curl -fsS -m 30 "https://openrouter.ai/api/v1/models?supported_parameters=tools" -o /tmp/or_models.json \
-    || { echo "Could not reach OpenRouter."; exit 1; }
+  if ! curl -fsS -m 30 "https://openrouter.ai/api/v1/models?supported_parameters=tools" -o /tmp/or_models.json; then
+    echo "❌ Could not reach OpenRouter (network/endpoint). Try again in a moment."; exit 1
+  fi
   mapfile -t ORROWS < <(python3 - <<'PY'
 import json
 data = json.load(open("/tmp/or_models.json")).get("data", [])
@@ -96,7 +122,7 @@ rows.sort(key=lambda r: (r[0], r[1], r[2], r[3]))
 for r in rows: print(f"{r[3]}\t{r[4]}")
 PY
 )
-  ((${#ORROWS[@]})) || { echo "No tool-capable models from popular vendors found."; exit 1; }
+  ((${#ORROWS[@]})) || { echo "❌ No tool-capable models from popular vendors returned (OpenRouter's catalog may have shifted)."; exit 1; }
   OR_IDS=(); i=1
   echo; echo "OpenRouter models (tool-capable; free first, then by price):"
   for row in "${ORROWS[@]}"; do
