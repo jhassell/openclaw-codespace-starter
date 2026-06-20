@@ -5,11 +5,8 @@ set -euo pipefail
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 echo "==> Installing OpenClaw (this can take a few minutes)…"
-export OPENCLAW_NO_ONBOARD=1
-export OPENCLAW_NO_PROMPT=1
-if ! curl -fsSL --proto '=https' --tlsv1.2 https://openclaw.ai/install.sh | bash -s -- --no-onboard --no-prompt; then
-  echo "!! OpenClaw install failed. Retry later with: bash .devcontainer/setup.sh" >&2
-fi
+bash "${REPO_DIR}/scripts/install-openclaw.sh" \
+  || echo "!! OpenClaw install failed. Retry later with: bash .devcontainer/setup.sh" >&2
 
 export PATH="${HOME}/.local/bin:${HOME}/.npm-global/bin:/usr/local/share/npm-global/bin:${PATH}"
 

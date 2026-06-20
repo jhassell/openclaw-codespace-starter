@@ -6,7 +6,7 @@ A GitHub **Codespaces** starter that installs [OpenClaw](https://github.com/open
 
 ## What happens when you open the Codespace
 
-1. **On create** (`postCreate`): installs OpenClaw and writes `~/.openclaw/openclaw.json` (LiteLLM provider, `gemma4` default). No onboarding wizard.
+1. **On create** (`postCreate`): installs OpenClaw (npm, public registry, with a leftover-cleanup step to avoid npm `ENOTEMPTY`) and writes `~/.openclaw/openclaw.json` (LiteLLM provider, `gemma4` default). No onboarding wizard.
 2. **On open**, two terminals start automatically (VS Code tasks):
    - **OpenClaw: Gateway** — runs a **pre-flight** that checks your LiteLLM key against the OU `/v1/models` endpoint. Key bad → clear error, gateway **not** started. Key good → `openclaw gateway run` (loopback, port 18789).
    - **OpenClaw: TUI** — waits for the gateway to be healthy (and **aborts with a message if the pre-flight failed**), then launches `openclaw tui`. You can start chatting right away.
@@ -73,7 +73,7 @@ When you pick the OpenRouter option, the script fetches OpenRouter's **tool-capa
 - `.devcontainer/setup.sh` — installs OpenClaw, renders the config.
 - `config/openclaw.template.json5` → `~/.openclaw/openclaw.json` — LiteLLM provider, `gateway.mode=local` + `bind=loopback`, primary/fallback models.
 - `.vscode/tasks.json` — opens the Gateway + TUI terminals on folder open.
-- `scripts/` — `preflight`, `start-gateway`, `start-tui`, `select-model`, `set-key`, `configure`.
+- `scripts/` — `install-openclaw`, `preflight`, `start-gateway`, `start-tui`, `select-model`, `set-key`, `configure`, `_env`.
 
 ## Links
 

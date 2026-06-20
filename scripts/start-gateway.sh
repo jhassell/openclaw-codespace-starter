@@ -19,8 +19,7 @@ fi
 
 if ! command -v openclaw >/dev/null 2>&1; then
   echo "⚙️  openclaw not found — installing it now (one-time, ~1-2 min)…"
-  OPENCLAW_NO_ONBOARD=1 OPENCLAW_NO_PROMPT=1 \
-    bash -c 'curl -fsSL --proto "=https" --tlsv1.2 https://openclaw.ai/install.sh | bash -s -- --no-onboard --no-prompt' || true
+  bash "${REPO_DIR}/scripts/install-openclaw.sh" || true
   source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/_env.sh" 2>/dev/null || true
 fi
 if ! command -v openclaw >/dev/null 2>&1; then
