@@ -14,7 +14,7 @@ A GitHub **Codespaces** starter that installs [OpenClaw](https://github.com/open
 ## Quick start
 
 1. **Use this template** → create your repo.
-2. **Add your key:** set a Codespaces secret named `LITELLM_API_KEY` (starts with `sk-`). You're prompted for it at creation because `devcontainer.json` declares it.
+2. **Add your key:** set a Codespaces secret named `LITELLM_API_KEY` (starts with `sk-`). You're prompted for it at creation because `devcontainer.json` declares it. (Optionally also set `OPENROUTER_API_KEY` to unlock OpenRouter models in the picker.)
 3. **Code → Codespaces → Create codespace on main.**
 4. Wait for the install to finish; the **Gateway** and **TUI** terminals open on their own. Start typing in the TUI.
 
@@ -39,13 +39,19 @@ Fix a bad key with `bash scripts/set-key.sh`, then re-run the tasks.
 
 Models are referenced as `litellm/<id>`, where `<id>` is what the gateway reports.
 
+### Using OpenRouter models
+
+The picker can also switch to [OpenRouter](https://openrouter.ai) (400+ models behind one API). It appears in `select-model.sh` **only when an OpenRouter key is present** — otherwise it's shown as `OpenRouter (no key present)` and isn't selectable. To enable it, add an `OPENROUTER_API_KEY` Codespaces secret (starts with `sk-or-`, from https://openrouter.ai/keys); the Codespace prompts for it at creation alongside the OU key.
+
+When you pick the OpenRouter option, the script fetches OpenRouter's **tool-capable** models (the ones suited to OpenClaw's agentic use), curated to popular vendors plus free options, with `$/M-token` prices (free listed first). Your choice is applied as `openrouter/<vendor>/<model>`. Note: OpenRouter bills your own OpenRouter account, and if you add the key after the gateway is already running, restart it so it can use OpenRouter.
+
 ## Commands
 
 | Command | What it does |
 | --- | --- |
 | *OpenClaw: Gateway* task (auto) | pre-flight key check, then `openclaw gateway run` |
 | *OpenClaw: TUI* task (auto) | waits for gateway health, then `openclaw tui` |
-| `bash scripts/select-model.sh` | pick primary + secondary from the live model list |
+| `bash scripts/select-model.sh` | pick primary + secondary from OU models, or switch to OpenRouter |
 | `bash scripts/set-key.sh` | enter/replace your `sk-` key |
 | `bash scripts/configure.sh` | re-render config from the template |
 | `openclaw tui` | open the TUI manually |

@@ -7,12 +7,16 @@
   // The installer will bump Node only if the base is too old.
   "image": "mcr.microsoft.com/devcontainers/javascript-node:22-bookworm",
 
-  // Codespaces PROMPTS for this secret at creation time if it isn't already
-  // saved in the user's account/repo secrets. It is injected as an env var.
+  // Codespaces PROMPTS for these secrets at creation time if they aren't already
+  // saved in the user's account/repo secrets. They are injected as env vars.
   "secrets": {
     "LITELLM_API_KEY": {
       "description": "Your OU LiteLLM API key (starts with sk-). Issued by the OU LiteLLM gateway at https://litellm.lib.ou.edu.",
       "documentationUrl": "https://docs.openclaw.ai/providers/litellm"
+    },
+    "OPENROUTER_API_KEY": {
+      "description": "Optional. OpenRouter API key (starts with sk-or-) — only needed if you switch a model to OpenRouter via scripts/select-model.sh. Get one at https://openrouter.ai/keys.",
+      "documentationUrl": "https://docs.openclaw.ai/providers/openrouter"
     }
   },
 
