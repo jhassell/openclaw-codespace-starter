@@ -33,7 +33,7 @@ Fix a bad key with `bash scripts/set-key.sh`, then re-run the tasks.
 
 `gemma4` is the default primary with no fallback — zero config needed. Three ways to change it:
 
-- **Interactive (recommended):** run `bash scripts/select-model.sh`. It lists the models your gateway actually serves (live, from `/v1/models`) and lets you pick a **primary** and optional **secondary/fallback**. Applied through OpenClaw and **hot-reloaded** — no restart.
+- **Interactive (recommended):** run `bash scripts/select-model.sh` — or, one click, **Command Palette → *Tasks: Run Task* → *OpenClaw: Choose Model***. It lists the models your gateway actually serves (live, from `/v1/models`) and lets you pick a **primary** and optional **secondary/fallback**. Applied through OpenClaw and **hot-reloaded** — no restart.
 - **In chat:** type `/model` in the TUI to switch the current session's model.
 - **Pinned at boot (reproducible):** set Codespaces secrets/variables `OPENCLAW_MODEL` (e.g. `llama3.1`) and optionally `OPENCLAW_MODEL_FALLBACKS` (comma-separated, e.g. `mistral,gemma4`). `configure.sh` bakes them into the config at creation — no prompt.
 
